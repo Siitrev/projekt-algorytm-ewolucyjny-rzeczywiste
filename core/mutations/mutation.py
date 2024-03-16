@@ -22,6 +22,16 @@ def mutation(old_chromosome: Chromosome, points: int) -> str:
     return new_chromosome
 
 
+def mutation_Gauss(ind):
+    avg = 0
+    sigmaaa = 1  # ustawić dowolne odchylenie standardowe
+    number = np.random.normal(avg, sigmaaa)
+
+    ind[0] = ind[0] + number
+    ind[1] = ind[1] + number
+
+    return ind
+
 """
 def mutation(old_chromosome, points):
     genome = old_chromosome.get  # bo get zwraca self.genome ?

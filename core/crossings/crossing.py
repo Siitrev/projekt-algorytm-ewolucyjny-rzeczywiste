@@ -13,7 +13,7 @@ def onePointCrossing(genome1 : str, genome2: str):
 
 def twoPointCrossing(genome1 : str, genome2: str):
 
-    random_point =  np.random.randint(0, len(genome1))
+    random_point = np.random.randint(0, len(genome1))
     random_point2 = np.random.randint(random_point+1, len(genome1)+1)
 
     new_genome1 = genome1[:random_point] + genome2[random_point:random_point2] + \
@@ -53,7 +53,7 @@ def homogeneousCrossing(genome1: str, genome2: str, probability_of_crossing : in
     return new_genome1, new_genome2
 
 
-def heuristic_crossover(number1, number2, upperLimit, lowerLimit):
+def heuristic_crossover(number1, number2):
     pot1 = []
     alfa = numpy.random.uniform(0, 1)
     if number1[0] <= number2[0] and number1[1] <= number2[1]:
@@ -64,4 +64,24 @@ def heuristic_crossover(number1, number2, upperLimit, lowerLimit):
     elif number1[0] >= number2[0] and number1[1] >= number2[1]:
         pot1[0] = number1[1] + alfa * (number1[0] - number1[1])
         pot1[1] = number2[1] + alfa * (number2[0] - number2[1])
+
+    else:
+        return number1  # ?????????? idk czy to dobry warunek ale idk co robic kiedy jest x1>x2 a y1<y2
     return pot1
+
+
+def average_crossover(*args):
+    n = len(args)
+    pot = []
+    sumx = 0
+    sumy = 0
+
+    for arg in args:
+        sumx += arg[0]
+        sumy += arg[1]
+
+    pot[0] = sumx / n
+    pot[1] = sumy / n
+
+    return pot
+
