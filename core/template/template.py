@@ -3,60 +3,19 @@ from typing import Callable
 import benchmark_functions as bf
 from copy import deepcopy 
 
-class ChromosomeInfo:
-    def __init__(self, start: np.float64, end: np.float64, precision: np.uint64) -> None:
-        self.start = start
-        self.end = end
-        self.precision = precision
-
-
-class Chromosome:
-    def __init__(self, chromosome_info: ChromosomeInfo) -> None:
-        self.__end = np.float64(chromosome_info.end)
-        self.__start = np.float64(chromosome_info.start)
-        self.__precision = np.uint64(chromosome_info.precision)
-        self.m = np.ceil(
-            np.log2((self.__end - self.__start) * np.power(10, self.__precision))
-            + np.log2(1)
-        )
-        self.m = np.int64(self.m)
-        self.randoms = [np.random.randint(0, 2) for _ in range(int(self.m))]
-        self.genome = "".join([str(bit) for bit in self.randoms])
-
-    def to_number(self) -> float:
-        addent = (
-            int(self.genome, 2)
-            * (self.__end - self.__start)
-            / (np.power(2, self.m) - 1)
-        )
-        return self.__start + addent
-
-    def set(self, chromosome: str):
-        self.genome = chromosome
-
-    def get(self) -> str:
-        return self.genome
-
-    def __str__(self) -> str:
-        return self.genome
-
 
 class Person:
-    def __init__(self, chromosome_info: ChromosomeInfo) -> None:
+    def __init__(self, chromosome_x: np.float64, chromosome_y: np.float64) -> None:
         self.fitness_function = bf.Michalewicz()
-        self.chromosomes = (Chromosome(chromosome_info), Chromosome(chromosome_info))
-        first_chromosome = self.chromosomes[0].to_number()
-        second_chromosome = self.chromosomes[1].to_number()
-        self.value = self.fitness_function([first_chromosome, second_chromosome])
+        self.chromosomes = [chromosome_x, chromosome_y]
+        self.value = self.fitness_function(self.chromosomes)
 
     def upadte_value(self):
-        first_chromosome = self.chromosomes[0].to_number()
-        second_chromosome = self.chromosomes[1].to_number()
-        self.value = self.fitness_function([first_chromosome, second_chromosome])
+        self.value = self.fitness_function(self.chromosomes)
     
     def __str__(self) -> str:
         return str(
-            tuple([chromosome.to_number() for chromosome in self.chromosomes])
+            tuple(self.chromosomes)
             + (self.value,)
         )
 
@@ -66,8 +25,8 @@ class Person:
 
 
 class Population:
-    def __init__(self, size: int, chromosome_info: ChromosomeInfo) -> None:
-        self.people = [Person(chromosome_info) for _ in range(size)]
+    def __init__(self, size: int, start: np.float64, end: np.float64) -> None:
+        self.people = [Person((end - start) * np.random.rand() + start, (end - start) * np.random.rand() + start) for _ in range(size)]
 
     def add_people(self, people):
         for person in people:
@@ -81,7 +40,7 @@ class Population:
     def __repr__(self) -> str:
         temp = [
             tuple(
-                [chromosome.to_number() for chromosome in person.chromosomes]
+                person.chromosomes
                 + [person.value]
             )
             for person in self.people
@@ -90,33 +49,17 @@ class Population:
 
 
 class Experiment:
-    def __init__(self, size: int, chromosome_info: ChromosomeInfo) -> None:
-        self.population = Population(size, chromosome_info)
-        self.chromosome_info = chromosome_info
+    def __init__(self, size: int, start: np.float64, end: np.float64) -> None:
+        self.population = Population(size, start, end)
         self.best_people = []
 
     def mutate(self, mutation: Callable, probability: float = 0.3, points : int = 1):
         
-        for index, person in enumerate(self.population.people):
+        for person in self.population.people:
             chance = np.random.rand()
             
             if chance <= probability:
-                new_chromosome_1 = mutation(person.chromosomes[0], points)
-                new_chromosome_2 = mutation(person.chromosomes[1], points)
-
-                self.population.people[index].chromosomes[0].set(new_chromosome_1)
-                self.population.people[index].chromosomes[0].set(new_chromosome_2)
-
-    def inverse(self, inversion: Callable, probability: float = 0.1):
-        for index, person in enumerate(self.population.people):
-            chance = np.random.rand()
-
-            if chance <= probability:
-                new_chromosome_1 = inversion(person.chromosomes[0].get())
-                new_chromosome_2 = inversion(person.chromosomes[1].get())
-
-                self.population.people[index].chromosomes[0].set(new_chromosome_1)
-                self.population.people[index].chromosomes[0].set(new_chromosome_2)
+                mutation(person.chromosomes, points)
 
     def cross(self, crossing: Callable,  probability : float = 0.8, **kwargs):
         population_len = len(self.population.people)
@@ -130,26 +73,15 @@ class Experiment:
             index_2 = np.random.randint(0, crossing_len)
             
             if chance <= probability:
-                chromosome_1_x = self.people_for_crossing[index_1].chromosomes[0].get()
-                chromosome_1_y = self.people_for_crossing[index_1].chromosomes[1].get()
+                chromosomes_1 = self.people_for_crossing[index_1].chromosomes
 
-                chromosome_2_x = self.people_for_crossing[index_2].chromosomes[0].get()
-                chromosome_2_y = self.people_for_crossing[index_2].chromosomes[1].get()
+                chromosomes_2 = self.people_for_crossing[index_2].chromosomes
                 
-                if "homogeneous" in kwargs:
-                    new_chromosomes_x = crossing(chromosome_1_x, chromosome_2_x, probability)
-                    new_chromosomes_y = crossing(chromosome_1_y, chromosome_2_y, probability)
-                else:
-                    new_chromosomes_x = crossing(chromosome_1_x, chromosome_2_x)
-                    new_chromosomes_y = crossing(chromosome_1_y, chromosome_2_y)
+                crossing(chromosomes_1, chromosomes_2)
                 
-                self.population.people[counter].chromosomes[0].set(new_chromosomes_x[0])
-                self.population.people[counter].chromosomes[0].set(new_chromosomes_y[0])
                 self.population.people[counter].upadte_value()
                 counter += 1
                 
-                self.population.people[counter].chromosomes[1].set(new_chromosomes_x[1])
-                self.population.people[counter].chromosomes[1].set(new_chromosomes_y[1])
                 self.population.people[counter].upadte_value()
                 counter += 1
         self.population.people = self.population.people[:target_population]
