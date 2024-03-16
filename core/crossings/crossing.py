@@ -1,4 +1,6 @@
 import numpy as np
+import numpy.random
+
 
 def onePointCrossing(genome1 : str, genome2: str):
 
@@ -6,9 +8,8 @@ def onePointCrossing(genome1 : str, genome2: str):
     tmp = genome1[random_point:]
     new_genome1 = genome1[:random_point] + genome2[random_point:]
     new_genome2 = genome2[:random_point] + tmp
-    return (new_genome1, new_genome2)
+    return new_genome1, new_genome2
 
-    
 
 def twoPointCrossing(genome1 : str, genome2: str):
 
@@ -21,10 +22,10 @@ def twoPointCrossing(genome1 : str, genome2: str):
     new_genome2 = genome2[:random_point] + genome1[random_point:random_point2] + \
     genome2[random_point2:]
 
-    return (new_genome1, new_genome2)
+    return new_genome1, new_genome2
     
 
-def homogeneousCrossing(genome1 : str, genome2: str, probability_of_crossing : int):
+def homogeneousCrossing(genome1: str, genome2: str, probability_of_crossing : int):
 
     new_genome1 = ""
     new_genome2 = ""
@@ -38,7 +39,7 @@ def homogeneousCrossing(genome1 : str, genome2: str, probability_of_crossing : i
     for x in range(len(genome1)):
 
         if x % 2 == 1:
-            if (random_numbers[random_numbers_counter] < probability_of_crossing ):
+            if random_numbers[random_numbers_counter] < probability_of_crossing:
                 new_genome1 += genome2[x]
                 new_genome2 += genome1[x]
                 random_numbers_counter += 1
@@ -49,4 +50,18 @@ def homogeneousCrossing(genome1 : str, genome2: str, probability_of_crossing : i
             new_genome1 += genome1[x]
             new_genome2 += genome2[x]
 
-    return (new_genome1, new_genome2)
+    return new_genome1, new_genome2
+
+
+def heuristic_crossover(number1, number2, upperLimit, lowerLimit):
+    pot1 = []
+    alfa = numpy.random.uniform(0, 1)
+    if number1[0] <= number2[0] and number1[1] <= number2[1]:
+        pot1[0] = number1[0] + alfa*(number1[1] - number1[0])
+        pot1[1] = number2[0] + alfa*(number2[1] - number2[0])
+
+    # tego nie bylo w pdf ale jest w ksiazce
+    elif number1[0] >= number2[0] and number1[1] >= number2[1]:
+        pot1[0] = number1[1] + alfa * (number1[0] - number1[1])
+        pot1[1] = number2[1] + alfa * (number2[0] - number2[1])
+    return pot1
