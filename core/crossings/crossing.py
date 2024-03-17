@@ -1,6 +1,16 @@
 import numpy as np
 import numpy.random
+import random
 import benchmark_functions as bf
+
+def check_range(number1, number2, downLimit : float, upperLimit : float):
+
+    if (number1[0] > downLimit and number1[1] > downLimit):
+        if (number2[0] > downLimit and number2[1] > downLimit):
+            if (number1[0] < upperLimit and number1[1] < upperLimit):
+                if (number2[0] < upperLimit and number2[1] < upperLimit):
+                    return True
+    return False
 
 # def heuristic_crossover(number1, number2):
 #     pot1 = []
@@ -52,3 +62,38 @@ def average_crossover(*args):
 
     return pot
 
+def arithmeti_crossing(number1, number2, downLimit : float, upperLimit : float):
+
+    while (1):
+        k = 0
+        while(k == 0):
+            k = random.random()
+        
+        newNumber1 = []
+        newNumber2 = []
+
+        newNumber1.append(k * number1[0] + (1 - k) * number2[0])
+        newNumber1.append(k * number1[1] + (1 - k) * number2[1])
+        newNumber2.append((1 - k) * number1[0] + k * number2[0])
+        newNumber2.append((1 - k) * number1[1] + k * number2[1])
+
+        if (check_range(newNumber1, newNumber2, downLimit, upperLimit)):
+            break
+    
+    return newNumber1, newNumber2
+
+def flat_crossing(number1, number2, downLimit : float, upperLimit : float):
+
+    while (1):
+        newNumber1 = []
+        newNumber2 = []
+        
+        newNumber1.append(random.uniform(number1[0], number2[0]))
+        newNumber1.append(random.uniform(number1[1], number2[1]))
+        newNumber2.append(random.uniform(number1[0], number2[0]))
+        newNumber2.append(random.uniform(number1[1], number2[1]))
+        
+        if (check_range(newNumber1, newNumber2, downLimit, upperLimit)):
+            break
+    
+    return newNumber1, newNumber2
