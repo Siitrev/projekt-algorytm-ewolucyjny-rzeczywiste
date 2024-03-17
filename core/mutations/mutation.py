@@ -1,51 +1,20 @@
 import numpy as np
 from core.template.template import Chromosome
 
-
-def mutation(old_chromosome: Chromosome, points: int) -> str:
-    genome = old_chromosome.get()  # bo get zwraca self.genome ?
-    length = len(genome)
-    inverted = list(genome)  # bo na stringu sie nie da
-
-    # Losowanie indeksu bitu
-    index = np.random.randint(0, length)
-    inverted[index] = "0" if genome[index] == "1" else "1"
-
-    if points == 2:
-        index2 = np.random.randint(0, length)
-        while index2 == index:
-            index2 = np.random.randint(0, length)
-        inverted[index2] = "0" if genome[index2] == "1" else "1"
-
-    # new_chromosome = inverted
-    new_chromosome = "".join(inverted)
-    return new_chromosome
-
-
-def mutation_Gauss(ind):
+def mutation_Gauss(ind, start, end):
     avg = 0
-    sigmaaa = 1  # ustawić dowolne odchylenie standardowe
-    number = np.random.normal(avg, sigmaaa)
+    sigma = 1  # ustawić dowolne odchylenie standardowe
+    def_ind0 = ind[0]
+    def_ind1 = ind[1]
+    while True:
+        number = np.random.normal(avg, sigma)
 
-    ind[0] = ind[0] + number
-    ind[1] = ind[1] + number
+        ind[0] = ind[0] + number
+        ind[1] = ind[1] + number
 
-    return ind
+        if ind[0] < end and ind[0] > start and ind[1] > start and ind[1] < end:
+            break; 
+        
+        ind[0] = def_ind0
+        ind[1] = def_ind1
 
-"""
-def mutation(old_chromosome, points):
-    genome = old_chromosome.get  # bo get zwraca self.genome ?
-    length = len(genome)
-
-    inverted = list(genome)  # bo na stringu sie nie da
-
-    i = 1
-    while i <= points:  # czyli 1 <= 1 lub 1 <= 2
-        i += 1
-        index = random.randint(0, length)
-        inverted[index] = '0' if genome[index] == '1' else '1'
-
-    new_chromosome = "".join(inverted)
-    return new_chromosome
-
-"""
