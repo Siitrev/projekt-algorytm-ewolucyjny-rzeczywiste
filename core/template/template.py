@@ -81,21 +81,24 @@ class Experiment:
             if chance <= probability:
                 chromosomes_1 = self.people_for_crossing[index_1].chromosomes
                 chromosomes_2 = self.people_for_crossing[index_2].chromosomes
-                
-                ind = crossing(chromosomes_1, chromosomes_2, self.population.start, self.population.end, maximization=kwargs["maximization"])
+                if "alpha" in kwargs and "beta" in kwargs:
+                    ind = crossing(chromosomes_1, chromosomes_2, self.population.start, self.population.end, kwargs["alpha"], kwargs["beta"])
+                else:    
+                    ind = crossing(chromosomes_1, chromosomes_2, self.population.start, self.population.end, maximization=kwargs["maximization"])
                 if ind:
-                    if "special_cross" in kwargs:
+                    if isinstance(ind[0],float):
                         self.population.people[counter].set(ind)
                         self.population.people[counter].update_value()
                         counter += 1
-                        
+                    
                     else:
                         ind = list(ind)
-                        self.population.people[counter].set(ind.pop())
-                        self.population.people[counter].update_value()
-                        counter += 1
+                        if not ind[1]:
+                            self.population.people[counter].set(ind[1])
+                            self.population.people[counter].update_value()
+                            counter += 1
                     
-                        self.population.people[counter].set(ind.pop())
+                        self.population.people[counter].set(ind[0])
                         self.population.people[counter].update_value()
                         counter += 1
         self.population.people = self.population.people[:target_population]

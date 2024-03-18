@@ -21,9 +21,7 @@ def mutation_Gauss(ind, start, end):
 def uniform_mutation(number1, downLimit, upperLimit):
   
     randomMutation = random.randint(0, 1) 
-    newNumber1[randomMutation] = random.uniform(downLimit, upperLimit)
-        
-    return newNumber1
+    number1[randomMutation] = random.uniform(downLimit, upperLimit)
 
-def mutation_index_flip(number1):
+def mutation_index_flip(number1, *args):
     return [number1[1], number1[0]]

@@ -94,7 +94,7 @@ def flat_crossing(number1, number2, downLimit : float, upperLimit : float, **kwa
     
     return newNumber1, newNumber2
 
-def linear_crossing(number1, number2, downLimit : float, upperLimit: float):
+def linear_crossing(number1, number2, downLimit : float, upperLimit: float, **kwargs):
     v = [0.5 * number1[0] + 0.5 * number1[1], 0.5 * number2[0] + 0.5 * number2[1]]
     w = [1.5 * number1[0] - 0.5 * number1[1], 1.5 * number2[0] + 0.5 * number2[1]]
     x = [-0.5 * number1[0] + 1.5 * number1[1], -0.5 * number2[0] + 1.5 * number2[1]]
@@ -109,7 +109,7 @@ def linear_crossing(number1, number2, downLimit : float, upperLimit: float):
     else:
         return fitness[0][0], fitness[1][0]
 
-def BLX_alpha_beta_crossing(number1, number2, alpha: float, beta: float, downLimit: float, upperLimit: float):
+def BLX_alpha_beta_crossing(number1, number2, downLimit: float, upperLimit: float, alpha: float, beta: float):
     offspring = [[],[]]
 
     for i in range(len(number1)):
@@ -132,8 +132,6 @@ def BLX_alpha_beta_crossing(number1, number2, alpha: float, beta: float, downLim
             while not downLimit <= u <= upperLimit:
                 u = np.random.default_rng().uniform(number2[i] - beta * d, number2[i] + alpha * d)
             offspring[1].append(u)
-    
-    return offspring
     
     return offspring
 

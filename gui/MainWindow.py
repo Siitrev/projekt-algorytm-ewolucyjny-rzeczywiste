@@ -65,11 +65,22 @@ class MainWindow(QMainWindow):
         self.crossing_method_combo.addItem("Average")
         self.crossing_method_combo.addItem("Arithmetic")
         self.crossing_method_combo.addItem("Flat")
+        self.crossing_method_combo.addItem("Linear")
+        self.crossing_method_combo.addItem("BLX")
+
+        self.crossing_method_combo.currentIndexChanged.connect(self.show_BTX)
+
+        self.alpha_txt = QLineEdit(placeholderText="Enter number alpha")
+        self.beta_txt = QLineEdit(placeholderText="Enter number beta")
+
+        self.alpha_txt.setVisible(0)
+        self.beta_txt.setVisible(0)
 
         mutation_method_label = QLabel("Mutation method:")
         self.mutation_method_combo = QComboBox()
         self.mutation_method_combo.addItem("Gauss")
         self.mutation_method_combo.addItem("Uniform")
+        self.mutation_method_combo.addItem("Index Flip")
 
         self.maximization_checkbox = QCheckBox("Maximization")
 
@@ -101,6 +112,8 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.amount_of_contestanst_txt)
         layout.addWidget(crossing_method_label)
         layout.addWidget(self.crossing_method_combo)
+        layout.addWidget(self.alpha_txt)
+        layout.addWidget(self.beta_txt)
         layout.addWidget(mutation_method_label)
         layout.addWidget(self.mutation_method_combo)
         layout.addWidget(self.maximization_checkbox)
@@ -115,6 +128,13 @@ class MainWindow(QMainWindow):
         self.amount_of_contestanst_txt.setVisible(0)
         if ind == 1:
             self.amount_of_contestanst_txt.setVisible(1)
+            
+    def show_BTX(self, ind: int):
+        self.alpha_txt.setVisible(0)
+        self.beta_txt.setVisible(0)
+        if ind == 5:
+            self.alpha_txt.setVisible(1)
+            self.beta_txt.setVisible(1)
 
     def reset(self):
         self.progress_value = 0
@@ -143,20 +163,25 @@ class MainWindow(QMainWindow):
         
         self.progress_bar.setRange(0, epochs)
         percent_value = epochs // 100
-        special_cross = False
+        BLX = False
         match self.crossing_method_combo.currentIndex():
             case 0:
                 cross_function = heuristic_crossover
-                special_cross = True
             case 1:
                 cross_function = average_crossover
-                special_cross = True
             case 2:
                 cross_function = arithmetic_crossing
             case 3:
                 cross_function = flat_crossing
+            case 4:
+                cross_function = linear_crossing
+            case 5:
+                cross_function = BLX_alpha_beta_crossing
+                alpha = float(self.alpha_txt.text())
+                beta = float(self.beta_txt.text())
+                BLX = True
+                
             
-        
         tournament = False
         
         match self.selection_method_combo.currentIndex():
@@ -174,6 +199,8 @@ class MainWindow(QMainWindow):
                 mutation = mutation_Gauss
             case 1:
                 mutation = uniform_mutation
+            case 2:
+                mutation = mutation_index_flip
         
         
         self.database.clear_data()
@@ -187,8 +214,8 @@ class MainWindow(QMainWindow):
             else:
                 experiment.selection(select_method,selection_amount,maximization)
             
-            if special_cross:
-                experiment.cross(cross_function, cross_probability, maximization=maximization, special_cross=special_cross)
+            if BLX:
+                experiment.cross(cross_function, cross_probability, alpha=alpha, beta=beta)
             else:
                 experiment.cross(cross_function, cross_probability, maximization=maximization)
             
