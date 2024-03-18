@@ -97,3 +97,47 @@ def flat_crossing(number1, number2, downLimit : float, upperLimit : float):
             break
     
     return newNumber1, newNumber2
+
+def linear_crossing(number1, number2, downLimit : float, upperLimit: float):
+    v = [0.5 * number1[0] + 0.5 * number1[1], 0.5 * number2[0] + 0.5 * number2[1]]
+    w = [1.5 * number1[0] - 0.5 * number1[1], 1.5 * number2[0] + 0.5 * number2[1]]
+    x = [-0.5 * number1[0] + 1.5 * number1[1], -0.5 * number2[0] + 1.5 * number2[1]]
+
+    fitfunc = bf.Michalewicz()
+
+    fitness = [(a, fitfunc(a)) for a in (v, w, x) if downLimit <= a[0] <= upperLimit and downLimit <= a[1] <= upperLimit]
+    fitness.sort(key=lambda x: x[1])
+
+    if len(fitness) == 1:
+        return fitness[0][0]
+    else:
+        return fitness[0][0], fitness[1][0]
+
+def BLX_alpha_beta_crossing(number1, number2, alpha: float, beta: float, downLimit: float, upperLimit: float):
+    offspring = [[],[]]
+
+    for i in range(len(number1)):
+        d = np.abs(number1[i] - number2[i])
+        if number1[i] <= number2[i]:
+            u = np.random.default_rng().uniform(number1[i] - alpha * d, number2[i] + beta * d)
+            while not downLimit <= u <= upperLimit:
+                u = np.random.default_rng().uniform(number1[i] - alpha * d, number2[i] + beta * d)
+            offspring[0].append(u)
+            u = np.random.default_rng().uniform(number1[i] - alpha * d, number2[i] + beta * d)
+            while not downLimit <= u <= upperLimit:
+                u = np.random.default_rng().uniform(number1[i] - alpha * d, number2[i] + beta * d)
+            offspring[1].append(u)
+        else:
+            u = np.random.default_rng().uniform(number2[i] - beta * d, number2[i] + alpha * d)
+            while not downLimit <= u <= upperLimit:
+                u = np.random.default_rng().uniform(number2[i] - beta * d, number2[i] + alpha * d)
+            offspring[0].append(u)
+            u = np.random.default_rng().uniform(number2[i] - beta * d, number2[i] + alpha * d)
+            while not downLimit <= u <= upperLimit:
+                u = np.random.default_rng().uniform(number2[i] - beta * d, number2[i] + alpha * d)
+            offspring[1].append(u)
+    
+    return offspring
+    
+    return offspring
+

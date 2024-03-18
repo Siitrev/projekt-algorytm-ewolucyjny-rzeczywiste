@@ -26,3 +26,6 @@ def uniform_mutation(number1, downLimit, upperLimit):
     newNumber1[randomMutation] = random.uniform(downLimit, upperLimit)
         
     return newNumber1
+
+def mutation_index_flip(number1):
+    return [number1[1], number1[0]]
