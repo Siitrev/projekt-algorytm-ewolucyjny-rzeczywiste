@@ -10,8 +10,12 @@ class Person:
         self.chromosomes = [chromosome_x, chromosome_y]
         self.value = self.fitness_function(self.chromosomes)
 
-    def upadte_value(self):
+    def update_value(self):
         self.value = self.fitness_function(self.chromosomes)
+    
+    def set(self, values : list):
+        self.chromosomes[0] = values[0]
+        self.chromosomes[1] = values[1]
     
     def __str__(self) -> str:
         return str(
@@ -27,6 +31,8 @@ class Person:
 class Population:
     def __init__(self, size: int, start: np.float64, end: np.float64) -> None:
         self.people = [Person((end - start) * np.random.rand() + start, (end - start) * np.random.rand() + start) for _ in range(size)]
+        self.start = start
+        self.end = end
 
     def add_people(self, people):
         for person in people:
@@ -53,13 +59,13 @@ class Experiment:
         self.population = Population(size, start, end)
         self.best_people = []
 
-    def mutate(self, mutation: Callable, probability: float = 0.3, points : int = 1):
+    def mutate(self, mutation: Callable, probability: float = 0.3):
         
         for person in self.population.people:
             chance = np.random.rand()
             
             if chance <= probability:
-                mutation(person.chromosomes, points)
+                mutation(person.chromosomes, self.population.start, self.population.end)
 
     def cross(self, crossing: Callable,  probability : float = 0.8, **kwargs):
         population_len = len(self.population.people)
@@ -74,16 +80,24 @@ class Experiment:
             
             if chance <= probability:
                 chromosomes_1 = self.people_for_crossing[index_1].chromosomes
-
                 chromosomes_2 = self.people_for_crossing[index_2].chromosomes
                 
-                crossing(chromosomes_1, chromosomes_2)
-                
-                self.population.people[counter].upadte_value()
-                counter += 1
-                
-                self.population.people[counter].upadte_value()
-                counter += 1
+                ind = crossing(chromosomes_1, chromosomes_2, self.population.start, self.population.end, maximization=kwargs["maximization"])
+                if ind:
+                    if "special_cross" in kwargs:
+                        self.population.people[counter].set(ind)
+                        self.population.people[counter].update_value()
+                        counter += 1
+                        
+                    else:
+                        ind = list(ind)
+                        self.population.people[counter].set(ind.pop())
+                        self.population.people[counter].update_value()
+                        counter += 1
+                    
+                        self.population.people[counter].set(ind.pop())
+                        self.population.people[counter].update_value()
+                        counter += 1
         self.population.people = self.population.people[:target_population]
 
     def selection(
