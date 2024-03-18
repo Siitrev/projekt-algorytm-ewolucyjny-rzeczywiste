@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import (
 from core.template.template import *
 from core.strategies.strategies import *
 from core.crossings.crossing import *
-from core.mutations.mutation import mutation
+from core.mutations.mutation import *
 from database.DbController import DbController
 from plots.plotting import plot_column
 import time, asyncio
@@ -61,14 +61,15 @@ class MainWindow(QMainWindow):
 
         crossing_method_label = QLabel("Crossing method:")
         self.crossing_method_combo = QComboBox()
-        self.crossing_method_combo.addItem("ONE_POINT")
-        self.crossing_method_combo.addItem("TWO_POINTS")
-        self.crossing_method_combo.addItem("HOMO")
+        self.crossing_method_combo.addItem("Heuristic")
+        self.crossing_method_combo.addItem("Average")
+        self.crossing_method_combo.addItem("Arithmetic")
+        self.crossing_method_combo.addItem("Flat")
 
         mutation_method_label = QLabel("Mutation method:")
         self.mutation_method_combo = QComboBox()
-        self.mutation_method_combo.addItem("ONE_POINT")
-        self.mutation_method_combo.addItem("TWO_POINTS")
+        self.mutation_method_combo.addItem("Gauss")
+        self.mutation_method_combo.addItem("Uniform")
 
         self.maximization_checkbox = QCheckBox("Maximization")
 
@@ -142,14 +143,18 @@ class MainWindow(QMainWindow):
         
         self.progress_bar.setRange(0, epochs)
         percent_value = epochs // 100
-
+        special_cross = False
         match self.crossing_method_combo.currentIndex():
             case 0:
-                cross_function = onePointCrossing
+                cross_function = heuristic_crossover
+                special_cross = True
             case 1:
-                cross_function = twoPointCrossing
+                cross_function = average_crossover
+                special_cross = True
             case 2:
-                cross_function = homogeneousCrossing
+                cross_function = arithmetic_crossing
+            case 3:
+                cross_function = flat_crossing
             
         
         tournament = False
@@ -163,8 +168,13 @@ class MainWindow(QMainWindow):
                 tournament = True
             case 2:
                 select_method = roulette_wheel
+                
+        match self.mutation_method_combo.currentIndex():
+            case 0:
+                mutation = mutation_Gauss
+            case 1:
+                mutation = uniform_mutation
         
-        mutation_points = self.mutation_method_combo.currentIndex() + 1
         
         self.database.clear_data()
         start = time.process_time()
@@ -176,9 +186,13 @@ class MainWindow(QMainWindow):
                 experiment.selection(select_method,selection_amount,maximization, contestants=contestants)
             else:
                 experiment.selection(select_method,selection_amount,maximization)
-              
-            experiment.cross(cross_function, cross_probability)
-            experiment.mutate(mutation, mutation_probability, mutation_points)
+            
+            if special_cross:
+                experiment.cross(cross_function, cross_probability, maximization=maximization, special_cross=special_cross)
+            else:
+                experiment.cross(cross_function, cross_probability, maximization=maximization)
+            
+            experiment.mutate(mutation, mutation_probability)
             experiment.population.add_people(experiment.best_people)
             if not current_epoch % percent_value: 
                 self.update(percent_value, epochs)
@@ -192,7 +206,7 @@ class MainWindow(QMainWindow):
         plot_column(self.database,3)
         
         result = experiment.get_result(maximization)
-        point = (result.chromosomes[0].to_number(), result.chromosomes[1].to_number())
+        point = tuple(result.chromosomes)
         success_info = QMessageBox()
         success_info.setText(
             f"Znaleziono rozwiązanie w {stop - start} sekund. Ma ono współrzedne {point} i wynosi {result.value}"

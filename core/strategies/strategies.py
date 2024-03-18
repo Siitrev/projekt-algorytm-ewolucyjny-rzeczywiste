@@ -1,4 +1,5 @@
 from core.template.template import Population, Person
+from copy import deepcopy
 import numpy as np
 
 
@@ -8,7 +9,7 @@ def best_selection(
     sample = sorted(
         population.people, reverse=maximization, key=lambda person: person.value
     )[:amount]
-    return sample
+    return deepcopy(sample)
 
 
 def tournament_selection(
@@ -27,7 +28,7 @@ def tournament_selection(
         else:
             best_contestant = min(tournament, key=lambda person: person.value)
         sample.append(best_contestant)
-    return sample
+    return deepcopy(sample)
 
 
 def roulette_wheel(
@@ -69,4 +70,4 @@ def roulette_wheel(
                 break
             distribution += prob
 
-    return sample
+    return deepcopy(sample)

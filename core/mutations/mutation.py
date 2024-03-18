@@ -1,6 +1,5 @@
 import numpy as np
 import random
-from core.template.template import Chromosome
 
 def mutation_Gauss(ind, start, end):
     avg = 0
@@ -20,9 +19,6 @@ def mutation_Gauss(ind, start, end):
         ind[1] = def_ind1
 
 def uniform_mutation(number1, downLimit, upperLimit):
-
-    newNumber1 = number1  
+  
     randomMutation = random.randint(0, 1) 
-    newNumber1[randomMutation] = random.uniform(downLimit, upperLimit)
-        
-    return newNumber1
+    number1[randomMutation] = random.uniform(downLimit, upperLimit)

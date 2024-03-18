@@ -1,7 +1,3 @@
-from core.template.template import *
-from core.strategies.strategies import *
-from core.mutations.mutation import mutation
-
 from gui.MainWindow import MainWindow
 from PyQt6.QtWidgets import QApplication
 import sys
